@@ -10,7 +10,7 @@ GEMINI_API_KEY: str = os.environ["GEMINI_API_KEY"]
 # or run `gcloud auth application-default login` once.
 
 GEMINI_TEXT_MODEL = "gemini-2.5-flash"
-GEMINI_IMAGE_MODEL = "imagen-3.0-generate-001"
+GEMINI_IMAGE_MODEL = "gemini-2.0-flash-preview-image-generation"
 
 VOICE_A = "en-US-Journey-F"   # female
 VOICE_B = "en-US-Journey-D"   # male

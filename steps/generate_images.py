@@ -1,4 +1,5 @@
 # steps/generate_images.py
+import base64
 from pathlib import Path
 
 from google import genai
@@ -8,7 +9,7 @@ import config
 
 
 def generate_images(script: dict, output_dir: Path) -> list[Path]:
-    """Generate one cartoon illustration per round via Imagen 3.
+    """Generate one cartoon illustration per round via Gemini image generation.
 
     Skips rounds whose PNG already exists.
     Returns list of paths to all round PNG files (in round order).
@@ -27,19 +28,27 @@ def generate_images(script: dict, output_dir: Path) -> list[Path]:
 
         prompt = (
             round_data["illustration_prompt"]
-            + ", cartoon illustration, clean art style, vertical format"
+            + ", cartoon illustration, clean art style, vertical 9:16 format, no text"
         )
 
-        response = client.models.generate_images(
+        response = client.models.generate_content(
             model=config.GEMINI_IMAGE_MODEL,
-            prompt=prompt,
-            config=types.GenerateImagesConfig(
-                number_of_images=1,
-                aspect_ratio="9:16",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_modalities=["IMAGE"],
             ),
         )
 
-        image_bytes = response.generated_images[0].image.image_bytes
+        # Extract image bytes from response parts
+        image_bytes = None
+        for part in response.candidates[0].content.parts:
+            if part.inline_data is not None:
+                image_bytes = base64.b64decode(part.inline_data.data)
+                break
+
+        if image_bytes is None:
+            raise RuntimeError(f"No image returned for round {round_num}")
+
         try:
             image_path.write_bytes(image_bytes)
         except Exception:
