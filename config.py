@@ -10,11 +10,10 @@ GEMINI_API_KEY: str = os.environ["GEMINI_API_KEY"]
 # or run `gcloud auth application-default login` once.
 
 GEMINI_TEXT_MODEL = "gemini-2.5-flash"
-GEMINI_IMAGE_MODEL = "gemini-2.0-flash-preview-image-generation"
+GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image"
 
-VOICE_A = "en-US-Journey-F"   # female
-VOICE_B = "en-US-Journey-D"   # male
-LANGUAGE_CODE = "en-US"
+VOICE_A = "en-US-JennyNeural"   # female (Microsoft Edge TTS)
+VOICE_B = "en-US-GuyNeural"    # male   (Microsoft Edge TTS)
 
 VIDEO_WIDTH = 1080
 VIDEO_HEIGHT = 1920
