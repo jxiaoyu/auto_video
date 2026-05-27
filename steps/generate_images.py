@@ -31,7 +31,7 @@ def generate_images(script: dict, output_dir: Path) -> list[Path]:
         )
 
         response = client.models.generate_images(
-            model="imagen-3.0-generate-001",
+            model=config.GEMINI_IMAGE_MODEL,
             prompt=prompt,
             config=types.GenerateImagesConfig(
                 number_of_images=1,

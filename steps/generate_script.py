@@ -47,7 +47,7 @@ def generate_script(topic: str, output_dir: Path) -> dict:
     prompt = _PROMPT_TEMPLATE.format(topic=topic)
 
     response = client.models.generate_content(
-        model="gemini-2.0-flash",
+        model=config.GEMINI_TEXT_MODEL,
         contents=prompt,
     )
 

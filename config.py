@@ -9,6 +9,9 @@ GEMINI_API_KEY: str = os.environ["GEMINI_API_KEY"]
 # Set GOOGLE_APPLICATION_CREDENTIALS to a service account JSON path,
 # or run `gcloud auth application-default login` once.
 
+GEMINI_TEXT_MODEL = "gemini-2.5-flash"
+GEMINI_IMAGE_MODEL = "imagen-3.0-generate-001"
+
 VOICE_A = "en-US-Journey-F"   # female
 VOICE_B = "en-US-Journey-D"   # male
 LANGUAGE_CODE = "en-US"
