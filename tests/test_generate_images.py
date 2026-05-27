@@ -15,27 +15,41 @@ _SCRIPT = {
     ],
 }
 
+_FAKE_PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
+
+
+def _make_mock_response(image_bytes: bytes) -> MagicMock:
+    """Build a mock matching the generate_content response structure."""
+    mock_part = MagicMock()
+    mock_part.inline_data = MagicMock()
+    mock_part.inline_data.data = image_bytes
+
+    mock_content = MagicMock()
+    mock_content.parts = [mock_part]
+
+    mock_candidate = MagicMock()
+    mock_candidate.content = mock_content
+
+    mock_response = MagicMock()
+    mock_response.candidates = [mock_candidate]
+    return mock_response
+
 
 def test_generate_images_saves_one_png_per_round():
-    fake_image_bytes = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
-
-    mock_generated_image = MagicMock()
-    mock_generated_image.image.image_bytes = fake_image_bytes
-    mock_response = MagicMock()
-    mock_response.generated_images = [mock_generated_image]
-
     with tempfile.TemporaryDirectory() as tmpdir:
         output_dir = Path(tmpdir)
         with patch("steps.generate_images.genai") as mock_genai:
             mock_client = MagicMock()
             mock_genai.Client.return_value = mock_client
-            mock_client.models.generate_images.return_value = mock_response
+            mock_client.models.generate_content.return_value = _make_mock_response(_FAKE_PNG)
+
             paths = generate_images(_SCRIPT, output_dir)
 
         assert len(paths) == 2
-        assert mock_client.models.generate_images.call_count == 2
+        assert mock_client.models.generate_content.call_count == 2
         for path in paths:
             assert path.exists()
+            assert path.read_bytes() == _FAKE_PNG
 
 
 def test_generate_images_skips_existing_files():
@@ -48,6 +62,6 @@ def test_generate_images_skips_existing_files():
             mock_client = MagicMock()
             mock_genai.Client.return_value = mock_client
             paths = generate_images(_SCRIPT, output_dir)
-            mock_client.models.generate_images.assert_not_called()
+            mock_client.models.generate_content.assert_not_called()
 
         assert len(paths) == 2
