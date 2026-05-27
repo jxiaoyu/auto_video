@@ -1,5 +1,4 @@
 # steps/generate_images.py
-import base64
 from pathlib import Path
 
 from google import genai
@@ -39,11 +38,11 @@ def generate_images(script: dict, output_dir: Path) -> list[Path]:
             ),
         )
 
-        # Extract image bytes from response parts
+        # Extract image bytes from response parts (data is already raw bytes)
         image_bytes = None
         for part in response.candidates[0].content.parts:
             if part.inline_data is not None:
-                image_bytes = base64.b64decode(part.inline_data.data)
+                image_bytes = part.inline_data.data
                 break
 
         if image_bytes is None:
