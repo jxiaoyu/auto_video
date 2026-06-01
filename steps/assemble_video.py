@@ -11,10 +11,15 @@ import config
 # ── Font helpers ─────────────────────────────────────────────────────────────
 
 def _get_font(size: int):
-    """Return a TrueType font at `size`, falling back to Pillow's default."""
+    """Return a TrueType font at `size`, falling back to Pillow's default.
+
+    Preference order: rounded/bold fonts first for a cartoon-style look.
+    """
     candidates = [
-        "/System/Library/Fonts/Helvetica.ttc",                        # macOS
+        "/System/Library/Fonts/Supplemental/Arial Rounded Bold.ttf",  # macOS
+        "/System/Library/Fonts/SFNSRounded.ttf",                      # macOS (SF Rounded)
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",       # Linux
+        "/System/Library/Fonts/Helvetica.ttc",                        # macOS fallback
         "C:/Windows/Fonts/arial.ttf",                                  # Windows
     ]
     for path in candidates:
@@ -32,8 +37,8 @@ def _render_subtitle(image_path: Path, text: str, dest_path: Path) -> None:
     img = Image.open(image_path).convert("RGB")
     img = img.resize((config.VIDEO_WIDTH, config.VIDEO_HEIGHT), Image.LANCZOS)
 
-    font = _get_font(44)
-    wrapped = textwrap.fill(text, width=35)
+    font = _get_font(52)
+    wrapped = textwrap.fill(text, width=30)
 
     # Measure wrapped text
     tmp_draw = ImageDraw.Draw(img)
@@ -56,7 +61,7 @@ def _render_subtitle(image_path: Path, text: str, dest_path: Path) -> None:
 
     # Black outline, then white text
     draw = ImageDraw.Draw(img)
-    for dx, dy in [(-2, -2), (2, -2), (-2, 2), (2, 2)]:
+    for dx, dy in [(-3, -3), (3, -3), (-3, 3), (3, 3), (-3, 0), (3, 0), (0, -3), (0, 3)]:
         draw.multiline_text((x + dx, y + dy), wrapped, font=font, fill="black", align="center")
     draw.multiline_text((x, y), wrapped, font=font, fill="white", align="center")
 
@@ -136,7 +141,7 @@ def assemble_video(script: dict, output_dir: Path) -> Path:
     # Write concat list
     concat_path = segments_dir / "concat.txt"
     concat_path.write_text(
-        "\n".join(f"file '{p.resolve()}'" for p in segment_paths)
+        "\n".join(f"file '{p.name}'" for p in segment_paths)
     )
 
     subprocess.run(
