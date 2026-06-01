@@ -10,7 +10,8 @@ import config
 def generate_images(script: dict, output_dir: Path) -> list[Path]:
     """Generate one cartoon illustration per round via Gemini image generation.
 
-    Skips rounds whose PNG already exists.
+    Requests 9:16 aspect ratio directly via ImageConfig so no post-processing
+    is needed. Skips rounds whose PNG already exists.
     Returns list of paths to all round PNG files (in round order).
     """
     client = genai.Client(api_key=config.GEMINI_API_KEY)
@@ -27,7 +28,7 @@ def generate_images(script: dict, output_dir: Path) -> list[Path]:
 
         prompt = (
             round_data["illustration_prompt"]
-            + ", cartoon illustration, clean art style, vertical 9:16 format, no text"
+            + ", cartoon illustration, clean art style, no text"
         )
 
         response = client.models.generate_content(
@@ -35,6 +36,9 @@ def generate_images(script: dict, output_dir: Path) -> list[Path]:
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_modalities=["IMAGE"],
+                image_config=types.ImageConfig(
+                    aspect_ratio="9:16",
+                ),
             ),
         )
 
