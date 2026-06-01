@@ -9,8 +9,8 @@ GEMINI_API_KEY: str = os.environ["GEMINI_API_KEY"]
 # Set GOOGLE_APPLICATION_CREDENTIALS to a service account JSON path,
 # or run `gcloud auth application-default login` once.
 
-GEMINI_TEXT_MODEL = "gemini-2.5-flash"
-GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image"
+GEMINI_TEXT_MODEL = "gemini-3.5-flash"
+GEMINI_IMAGE_MODEL = "gemini-3.1-flash-image"
 
 VOICE_A = "en-US-JennyNeural"   # female (Microsoft Edge TTS)
 VOICE_B = "en-US-GuyNeural"    # male   (Microsoft Edge TTS)
