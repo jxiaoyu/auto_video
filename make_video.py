@@ -55,7 +55,10 @@ def main() -> None:
 
     _check_ffmpeg()
 
-    output_dir = Path(config.OUTPUT_DIR) / args.topic
+    # Strip quotes and surrounding whitespace so folder names stay clean
+    # regardless of how the topic was quoted on the command line.
+    safe_topic = args.topic.strip().strip("'\"")
+    output_dir = Path(config.OUTPUT_DIR) / safe_topic
     output_dir.mkdir(parents=True, exist_ok=True)
 
     if args.redo:
@@ -63,7 +66,7 @@ def main() -> None:
         _clear_step(output_dir, args.redo)
 
     print("\nStep 1: Generating dialogue script...")
-    script = generate_script(args.topic, output_dir)
+    script = generate_script(safe_topic, output_dir)
 
     print("\nStep 1b: Exporting bilingual transcript...")
     bilingual_path = export_bilingual(script, output_dir)
