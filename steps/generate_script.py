@@ -7,24 +7,37 @@ from google import genai
 
 import config
 
-_PROMPT_TEMPLATE = """Create a funny, engaging English workplace dialogue about: {topic}
+_PROMPT_TEMPLATE = """我是一位小红书博主，致力于帮助中文母语用户提升英语的听说能力，帮我写一段职场场景对话，主题实用且吸睛，围绕的主题是： {topic}
 
 Requirements:
 - 3 to 5 rounds (one round = Speaker A says something, Speaker B responds)
+- The dialogue must be ONE continuous conversation — each round flows naturally from the previous, building toward a resolution or punchline at the end
 - Total dialogue under 60 seconds when spoken aloud (keep each line short)
 - Witty, relatable workplace humor
-- illustration_prompt must describe a cartoon scene showing both characters and their emotions
+- Give each character a real first name (common English names). When characters address each other in dialogue, always use their names — never call them "A" or "B".
+- Define their specific, consistent visual appearances (clothing, hair, accessories). These same descriptions will be reused in every illustration.
+- Each illustration_prompt should describe only the scene/action/emotion for that round, referring to characters by name — appearance is handled separately
 
 Return ONLY valid JSON — no markdown fences, no extra text:
 {{
   "topic": "{topic}",
+  "characters": {{
+    "A": {{
+      "name": "[real first name]",
+      "appearance": "[detailed appearance: gender, clothing, hair, accessories — be specific so a cartoon artist can draw consistently]"
+    }},
+    "B": {{
+      "name": "[real first name]",
+      "appearance": "[detailed appearance: gender, clothing, hair, accessories — be specific so a cartoon artist can draw consistently]"
+    }}
+  }},
   "rounds": [
     {{
       "round": 1,
-      "illustration_prompt": "Office scene, [describe both characters + emotions/actions], cartoon style, warm pastel colors, clean lines, vertical 9:16 composition",
+      "illustration_prompt": "[scene/action/emotion for this round only, referring to characters by name, e.g. 'Emily walks up to Kevin's desk holding a coffee, Kevin looks up from laptop nervously']",
       "lines": [
-        {{"speaker": "A", "text": "..."}},
-        {{"speaker": "B", "text": "..."}}
+        {{"speaker": "A", "text": "...", "translation": "（中文翻译）"}},
+        {{"speaker": "B", "text": "...", "translation": "（中文翻译）"}}
       ]
     }}
   ]

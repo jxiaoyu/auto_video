@@ -17,6 +17,26 @@ def generate_images(script: dict, output_dir: Path) -> list[Path]:
     client = genai.Client(api_key=config.GEMINI_API_KEY)
     image_paths: list[Path] = []
 
+    # Build a shared character block so every image uses the same appearances.
+    # characters[X] may be a plain string (legacy) or {"name": ..., "appearance": ...}
+    characters = script.get("characters", {})
+    char_block = ""
+    if characters:
+        def _char_desc(c) -> str:
+            if isinstance(c, dict):
+                name = c.get("name", "")
+                appearance = c.get("appearance", "")
+                return f"{name} — {appearance}" if name else appearance
+            return str(c)
+
+        char_a = _char_desc(characters.get("A", ""))
+        char_b = _char_desc(characters.get("B", ""))
+        char_block = (
+            f"Character A: {char_a}. "
+            f"Character B: {char_b}. "
+            "Keep these character designs exactly consistent across all images. "
+        )
+
     for round_data in script["rounds"]:
         round_num = round_data["round"]
         image_path = output_dir / f"round_{round_num}.png"
@@ -27,8 +47,9 @@ def generate_images(script: dict, output_dir: Path) -> list[Path]:
             continue
 
         prompt = (
-            round_data["illustration_prompt"]
-            + ", cartoon illustration, clean art style, no text"
+            char_block
+            + round_data["illustration_prompt"]
+            + ", cartoon illustration, clean art style, warm pastel colors, no text"
         )
 
         response = client.models.generate_content(

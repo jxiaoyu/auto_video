@@ -9,6 +9,7 @@ from steps.generate_script import generate_script
 from steps.generate_images import generate_images
 from steps.generate_audio import generate_audio
 from steps.assemble_video import assemble_video
+from steps.export_bilingual import export_bilingual
 
 
 def _check_ffmpeg() -> None:
@@ -23,7 +24,7 @@ def _clear_step(output_dir: Path, step: str) -> None:
     all_steps = ["script", "images", "audio", "video"]
     idx = all_steps.index(step)
     patterns = {
-        "script": ["script.json"],
+        "script": ["script.json", "bilingual.txt"],
         "images": ["round_*.png"],
         "audio":  ["line_*.mp3"],
         "video":  ["segments/", "final.mp4"],
@@ -64,6 +65,9 @@ def main() -> None:
     print("\nStep 1: Generating dialogue script...")
     script = generate_script(args.topic, output_dir)
 
+    print("\nStep 1b: Exporting bilingual transcript...")
+    bilingual_path = export_bilingual(script, output_dir)
+
     print("\nStep 2: Generating illustrations...")
     generate_images(script, output_dir)
 
@@ -73,7 +77,9 @@ def main() -> None:
     print("\nSteps 4-5: Assembling video...")
     final_path = assemble_video(script, output_dir)
 
-    print(f"\n✓ Done! Video saved to: {final_path}")
+    print(f"\n✓ Done!")
+    print(f"  Video:    {final_path}")
+    print(f"  Bilingual: {bilingual_path}")
 
 
 if __name__ == "__main__":
