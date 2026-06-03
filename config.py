@@ -12,8 +12,8 @@ GEMINI_API_KEY: str = os.environ["GEMINI_API_KEY"]
 GEMINI_TEXT_MODEL = "gemini-3.5-flash"
 GEMINI_IMAGE_MODEL = "gemini-3.1-flash-image"
 
-VOICE_A = "en-US-JennyNeural"   # female (Microsoft Edge TTS)
-VOICE_B = "en-US-GuyNeural"    # male   (Microsoft Edge TTS)
+VOICE_FEMALE = "en-US-JennyNeural"   # Microsoft Edge TTS
+VOICE_MALE   = "en-US-GuyNeural"     # Microsoft Edge TTS
 
 VIDEO_WIDTH = 1080
 VIDEO_HEIGHT = 1920

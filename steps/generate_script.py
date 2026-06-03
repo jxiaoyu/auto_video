@@ -24,11 +24,13 @@ Return ONLY valid JSON — no markdown fences, no extra text:
   "characters": {{
     "A": {{
       "name": "[real first name]",
-      "appearance": "[detailed appearance: gender, clothing, hair, accessories — be specific so a cartoon artist can draw consistently]"
+      "gender": "female or male",
+      "appearance": "[detailed appearance: clothing, hair, accessories — be specific so a cartoon artist can draw consistently]"
     }},
     "B": {{
       "name": "[real first name]",
-      "appearance": "[detailed appearance: gender, clothing, hair, accessories — be specific so a cartoon artist can draw consistently]"
+      "gender": "female or male",
+      "appearance": "[detailed appearance: clothing, hair, accessories — be specific so a cartoon artist can draw consistently]"
     }}
   }},
   "rounds": [

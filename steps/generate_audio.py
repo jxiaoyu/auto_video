@@ -13,14 +13,26 @@ async def _synthesize(text: str, voice: str, output_path: Path) -> None:
     await communicate.save(str(output_path))
 
 
+def _voice_for_speaker(speaker_key: str, characters: dict) -> str:
+    """Return the correct Edge TTS voice for a speaker based on their gender.
+
+    Falls back to VOICE_FEMALE if gender is missing or unrecognised.
+    """
+    char = characters.get(speaker_key, {})
+    gender = (char.get("gender", "") if isinstance(char, dict) else "").lower()
+    return config.VOICE_MALE if gender == "male" else config.VOICE_FEMALE
+
+
 def generate_audio(script: dict, output_dir: Path) -> list[Path]:
     """Synthesize TTS audio for every dialogue line via Edge TTS.
 
-    Speaker A → config.VOICE_A, Speaker B → config.VOICE_B.
+    Voice is chosen by the character's gender field, not their A/B label,
+    so male characters always get the male voice and vice-versa.
     Skips lines whose MP3 already exists.
     Returns list of paths in script order: [line_1_1.mp3, line_1_2.mp3, ...]
     """
     audio_paths: list[Path] = []
+    characters = script.get("characters", {})
 
     for round_data in script["rounds"]:
         round_num = round_data["round"]
@@ -32,7 +44,7 @@ def generate_audio(script: dict, output_dir: Path) -> list[Path]:
                 audio_paths.append(audio_path)
                 continue
 
-            voice = config.VOICE_A if line["speaker"] == "A" else config.VOICE_B
+            voice = _voice_for_speaker(line["speaker"], characters)
 
             try:
                 asyncio.run(_synthesize(line["text"], voice, audio_path))
