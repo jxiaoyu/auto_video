@@ -8,9 +8,23 @@ import config
 
 
 async def _synthesize(text: str, voice: str, output_path: Path) -> None:
-    """Async helper: synthesize one line and save to output_path."""
-    communicate = edge_tts.Communicate(text, voice)
-    await communicate.save(str(output_path))
+    """Async helper: synthesize one line and save to output_path.
+
+    Retries up to 3 times with exponential backoff to handle transient
+    503 errors from the Edge TTS service.
+    """
+    last_exc: Exception | None = None
+    for attempt in range(3):
+        try:
+            communicate = edge_tts.Communicate(text, voice)
+            await communicate.save(str(output_path))
+            return
+        except Exception as exc:
+            last_exc = exc
+            wait = 2 ** attempt  # 1 s, 2 s, 4 s
+            print(f"  [warn] TTS attempt {attempt + 1} failed ({exc}), retrying in {wait}s...")
+            await asyncio.sleep(wait)
+    raise last_exc
 
 
 def _voice_for_speaker(speaker_key: str, characters: dict) -> str:
@@ -51,6 +65,9 @@ def generate_audio(script: dict, output_dir: Path) -> list[Path]:
             except Exception:
                 audio_path.unlink(missing_ok=True)
                 raise
+
+            # Brief pause between requests to avoid triggering rate limits
+            asyncio.run(asyncio.sleep(0.5))
 
             print(
                 f"  [done] line_{round_num}_{line_idx}.mp3"
