@@ -205,8 +205,10 @@ async def generate(topic: str):
 
 @app.get("/output/{topic}/{filename}")
 async def download(topic: str, filename: str):
-    path = Path("output") / urllib.parse.unquote(topic) / filename
-    if not path.exists():
+    output_root = Path("output").resolve()
+    path = (output_root / urllib.parse.unquote(topic) / filename).resolve()
+    # Guard against path traversal (e.g. ..%2F..%2Fetc/passwd)
+    if not path.is_relative_to(output_root) or not path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(path, filename=filename)
 
