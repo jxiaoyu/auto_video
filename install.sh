@@ -74,7 +74,8 @@ pip install -r requirements.txt --quiet
 if [ ! -f .env ]; then
   echo ""
   echo "A Gemini API key is required for video generation."
-  read -p "Paste your Gemini API key: " api_key
+  # Read from /dev/tty so it works even when the script is piped (curl | bash)
+  read -p "Paste your Gemini API key: " api_key < /dev/tty
   echo "GEMINI_API_KEY=$api_key" > .env
   echo "✓ API key saved to .env"
 else
