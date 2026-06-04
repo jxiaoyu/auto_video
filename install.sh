@@ -24,7 +24,7 @@ brew install python@3.12 ffmpeg
 
 # ── 3. Clone repo ─────────────────────────────────────────────────────────────
 INSTALL_DIR="$HOME/auto_video"
-REPO_URL="https://github.com/YOUR_USERNAME/auto_video.git"   # ← update before distributing
+REPO_URL="https://github.com/jxiaoyu/auto_video.git"
 
 if [ -d "$INSTALL_DIR/.git" ]; then
   echo "✓ Repository already cloned at $INSTALL_DIR"
