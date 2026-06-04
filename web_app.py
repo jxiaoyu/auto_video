@@ -17,7 +17,7 @@ import config  # validates GEMINI_API_KEY on import
 app = FastAPI(title="Auto Video Generator")
 
 # Prevent concurrent generation jobs
-_job_running = False
+_job_lock = asyncio.Lock()
 
 # ── HTML UI ───────────────────────────────────────────────────────────────────
 
@@ -155,43 +155,39 @@ async def index() -> str:
 
 async def _stream_pipeline(topic: str) -> AsyncGenerator[str, None]:
     """Run make_video.py as a subprocess; yield SSE events from its stdout."""
-    global _job_running
-
-    if _job_running:
+    if _job_lock.locked():
         yield "event: error_msg\ndata: 已有任务正在运行，请稍候再试\n\n"
         return
 
-    _job_running = True
-    try:
-        proc = await asyncio.create_subprocess_exec(
-            sys.executable, "make_video.py", "--topic", topic,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT,
-            cwd=Path(__file__).parent,
-        )
+    async with _job_lock:
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable, "make_video.py", "--topic", topic,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+                cwd=Path(__file__).parent,
+            )
 
-        async for raw in proc.stdout:
-            line = raw.decode("utf-8", errors="replace").rstrip()
-            if line:
-                yield f"event: log\ndata: {line}\n\n"
+            async for raw in proc.stdout:
+                line = raw.decode("utf-8", errors="replace").rstrip()
+                if line:
+                    yield f"event: log\ndata: {line}\n\n"
 
-        await proc.wait()
+            await proc.wait()
 
-        if proc.returncode == 0:
-            safe_topic = topic.strip().strip("'\"")
-            encoded = urllib.parse.quote(safe_topic)
-            payload = json.dumps({
-                "video":     f"/output/{encoded}/final.mp4",
-                "bilingual": f"/output/{encoded}/bilingual.txt",
-            })
-            yield f"event: done\ndata: {payload}\n\n"
-        else:
-            yield "event: error_msg\ndata: 生成失败，请查看日志\n\n"
+            if proc.returncode == 0:
+                safe_topic = topic.strip().strip("'\"")
+                encoded = urllib.parse.quote(safe_topic)
+                payload = json.dumps({
+                    "video":     f"/output/{encoded}/final.mp4",
+                    "bilingual": f"/output/{encoded}/bilingual.txt",
+                })
+                yield f"event: done\ndata: {payload}\n\n"
+            else:
+                yield "event: error_msg\ndata: 生成失败，请查看日志\n\n"
 
-    except Exception as exc:
-        yield f"event: error_msg\ndata: {exc}\n\n"
-    finally:
-        _job_running = False
+        except Exception as exc:
+            yield f"event: error_msg\ndata: {exc}\n\n"
 
 
 @app.get("/generate")
@@ -205,7 +201,7 @@ async def generate(topic: str):
 
 @app.get("/output/{topic}/{filename}")
 async def download(topic: str, filename: str):
-    output_root = Path("output").resolve()
+    output_root = (Path(__file__).parent / "output").resolve()
     path = (output_root / urllib.parse.unquote(topic) / filename).resolve()
     # Guard against path traversal (e.g. ..%2F..%2Fetc/passwd)
     if not path.is_relative_to(output_root) or not path.exists():

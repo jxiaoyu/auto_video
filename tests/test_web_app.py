@@ -20,12 +20,17 @@ async def test_download_missing_file_returns_404():
 
 async def test_generate_rejects_concurrent_jobs(monkeypatch):
     """While a job is running, a second /generate call returns error_msg SSE event."""
+    import asyncio
     import web_app
-    monkeypatch.setattr(web_app, "_job_running", True)
 
-    from web_app import app
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        resp = await client.get("/generate?topic=test")
+    # Simulate a job already holding the lock
+    await web_app._job_lock.acquire()
+    try:
+        from web_app import app
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get("/generate?topic=test")
+    finally:
+        web_app._job_lock.release()
 
     assert resp.status_code == 200  # SSE always returns 200; errors are sent as events
     assert "error_msg" in resp.text
