@@ -18,11 +18,35 @@ else
   echo "✓ Homebrew already installed"
 fi
 
-# ── 2. Python & ffmpeg ────────────────────────────────────────────────────────
-echo "Installing Python 3.12 and ffmpeg..."
-brew install python@3.12 ffmpeg
+# ── 2. ffmpeg ─────────────────────────────────────────────────────────────────
+echo "Installing ffmpeg..."
+brew install ffmpeg
 
-# ── 3. Clone repo ─────────────────────────────────────────────────────────────
+# ── 3a. pyenv ─────────────────────────────────────────────────────────────────
+PYTHON_VERSION="3.12.10"
+
+if ! command -v pyenv &>/dev/null; then
+  echo "Installing pyenv..."
+  brew install pyenv
+fi
+
+# Make pyenv available in this script session
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+
+# Install target Python version if not already present
+if ! pyenv versions --bare | grep -qx "$PYTHON_VERSION"; then
+  echo "Installing Python $PYTHON_VERSION via pyenv..."
+  pyenv install "$PYTHON_VERSION"
+else
+  echo "✓ Python $PYTHON_VERSION already installed via pyenv"
+fi
+
+pyenv global "$PYTHON_VERSION"
+PYTHON_BIN="$(pyenv root)/versions/$PYTHON_VERSION/bin/python3"
+
+# ── 3b. Clone repo ────────────────────────────────────────────────────────────
 INSTALL_DIR="$HOME/auto_video"
 REPO_URL="https://github.com/jxiaoyu/auto_video.git"
 
@@ -37,8 +61,8 @@ cd "$INSTALL_DIR"
 
 # ── 4. Python virtual environment ─────────────────────────────────────────────
 if [ ! -f venv/bin/activate ]; then
-  echo "Creating Python virtual environment..."
-  python3.12 -m venv venv
+  echo "Creating Python virtual environment (Python $PYTHON_VERSION)..."
+  "$PYTHON_BIN" -m venv venv
 fi
 
 source venv/bin/activate
