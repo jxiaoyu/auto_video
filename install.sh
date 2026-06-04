@@ -85,6 +85,8 @@ fi
 DESKTOP_LINK="$HOME/Desktop/Auto Video Generator.command"
 cp "$INSTALL_DIR/launch.command" "$DESKTOP_LINK"
 chmod +x "$DESKTOP_LINK"
+# Remove macOS quarantine flag so Gatekeeper doesn't block the double-click
+xattr -d com.apple.quarantine "$DESKTOP_LINK" 2>/dev/null || true
 
 echo ""
 echo "╔══════════════════════════════════════╗"
