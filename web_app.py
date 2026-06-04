@@ -1,6 +1,7 @@
 # web_app.py
 import asyncio
 import json
+import os
 import sys
 import threading
 import urllib.parse
@@ -162,10 +163,12 @@ async def _stream_pipeline(topic: str) -> AsyncGenerator[str, None]:
     async with _job_lock:
         try:
             proc = await asyncio.create_subprocess_exec(
-                sys.executable, "make_video.py", "--topic", topic,
+                sys.executable, "-u", "make_video.py", "--topic", topic,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
                 cwd=Path(__file__).parent,
+                # Force unbuffered output so SSE receives each line immediately
+                env={**os.environ, "PYTHONUNBUFFERED": "1"},
             )
 
             async for raw in proc.stdout:
