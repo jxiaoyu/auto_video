@@ -23,7 +23,7 @@ echo "Installing ffmpeg..."
 brew install ffmpeg
 
 # ── 3a. pyenv ─────────────────────────────────────────────────────────────────
-PYTHON_VERSION="3.12.10"
+PYTHON_VERSION="3.14.3"
 
 if ! command -v pyenv &>/dev/null; then
   echo "Installing pyenv..."
